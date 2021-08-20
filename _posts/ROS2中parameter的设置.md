@@ -88,6 +88,8 @@ colcon build --packages-select cpp_parameters
 ros2 run cpp_parameters parameter_node
 ```
 
+![image-20210820145312071](/home/ubuntu-ros2/myBlog/source/_posts/ROS2中parameter的设置/image-20210820145312071.png)
+
 ## 5. 修改参数
 
 - 通过命令行来修改
@@ -109,6 +111,8 @@ ros2 run cpp_parameters parameter_node
   ```
   ros2 param set /parameter_node my_parameter earth
   ```
+
+  ![image-20210820145745607](/home/ubuntu-ros2/myBlog/source/_posts/ROS2中parameter的设置/image-20210820145745607.png)
 
 - 通过launch文件修改
 
@@ -143,5 +147,7 @@ ros2 run cpp_parameters parameter_node
   ```
 
   编译运行省略
+
+  ![image-20210820152150768](/home/ubuntu-ros2/myBlog/source/_posts/ROS2中parameter的设置/image-20210820152150768.png)
 
 - 通过源代码修改（专门细说）
