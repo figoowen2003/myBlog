@@ -200,7 +200,7 @@ std::string TopicStatisticsListener::MetricsMessageToString(const MetricsMessage
   auto options = rclcpp::SubscriptionOptions();	// 创建话题的可选项
   options.topic_stats_options.state = rclcpp::TopicStatisticsState::Enable;	// 话题统计使能
   options.topic_stats_options.publish_topic = publish_topic;	// 设置消息统计话题的名称，可以自定义，默认为/statistics
-  options.topic_stats_options.publish_period = publish_period;	// 设置统计消息发布的周期，默认为1s
+  options.topic_stats_options.publish_period = publish_period;	// 设置统计消息发布的周期，默认为5s
 
   if (topic_type == "imu") {
     // Start the talker and listener nodes to pass IMU messages
