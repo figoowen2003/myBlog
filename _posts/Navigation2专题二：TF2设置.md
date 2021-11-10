@@ -20,7 +20,7 @@ tags: TF2, URDF, REP-105, REP-103
 
   - 需要一种方法将收到的雷达扫描数值从base_laser坐标系转换到base_link坐标系。
 
-    ![../../_images/simple_robot.png](/home/ubuntu-ros2/myBlog/source/_posts/Navigation专题二：TF2设置/simple_robot.png)
+    ![../../_images/simple_robot.png](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题二：TF2设置/simple_robot.png)
 
   - 如上图所示，雷达位于底座中心点上方10cm、靠右侧20cm处。
 

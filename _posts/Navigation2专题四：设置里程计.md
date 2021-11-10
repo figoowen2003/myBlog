@@ -185,7 +185,7 @@ tags: odometry, ekf
 
    添加一个差速驱动
 
-   - 差速驱动名为ModelPlugin，通过配置这个插件，便可以通过话题/demo/odom来发布nav_msgs/Odometry消息。
+   - 添加差速驱动模型插件（ModelPlugin），通过配置这个插件，便可以通过话题/demo/odom来发布nav_msgs/Odometry消息。
 
    - 左右轮的关节将被设置为sam_bot的车轮关节
 
@@ -458,24 +458,38 @@ tags: odometry, ekf
      ros2 topic list
      ```
 
-     ![image-20211104150234045](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题四：设置里程计/image-20211104150234045.png)
-
      ```
      ros2 topic info /demo/imu
      ros2 topic info /demo/odom
      ```
+     
+     ![image-20211110222653556](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题四：设置里程计/image-20211110222653556.png)
+
+     **此处通过下载galactic版本的robot localization源码包，然后编译来解决ekf_node总是启动失败的问题：**
+
+     ![image-20211110223024176](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题四：设置里程计/image-20211110223024176.png)
+
+     ![image-20211110223108300](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题四：设置里程计/image-20211110223108300.png)
+
+     **在sam_bot_description所在的工程目录下，source编译好的robot localization的setup.bash文件，然后再启动自己的launch文件**
+     
+     ![image-20211110223408257](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题四：设置里程计/image-20211110223408257.png)
+     
+     
 
      **此处有一个问题，应为当前使用的是rolling版本，结果robot_localization的ekf_node节点无法启动，因此，两个话题依然没有订阅者。**
-
+     
      ![image-20211104183102352](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题四：设置里程计/image-20211104183102352.png)
-
+     
      **探究器原因**
-
+     
+     ![image-20211110184228088](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题四：设置里程计/image-20211110184228088.png)
+     
      ```
      ros2 run robot_localization ekf_node
      ```
-
+     
      ![image-20211104183202653](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题四：设置里程计/image-20211104183202653.png)
-
+     
      **应该是rolling版本的问题，在foxy版本则可以正常启动ekf_node**
 
