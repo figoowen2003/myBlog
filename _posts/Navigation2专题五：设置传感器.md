@@ -494,12 +494,26 @@ tags: costmap
 
   ![../../_images/demo_laserscan_rviz.png](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题五：设置传感器/demo_laserscan_rviz.png)
 
+  ![](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题五：设置传感器/Peek 2021-08-18 18-09.gif)
+
   为了可视化sensor_msgs/Image消息和sensor_msgs/PointCloud2消息，可以参照LaserScan操作
 
   ![../../_images/add_topic_image_pointcloud2.png](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题五：设置传感器/add_topic_image_pointcloud2.png)
 
   ![../../_images/demo_image_rviz.png](https://navigation.ros.org/_images/demo_image_rviz.png)
-
+  
+  **上图为官方结果，实际结果添加image话题后，看不到图像**
+  
+  ![image-20211111090823034](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题五：设置传感器/image-20211111090823034.png)
+  
+  **需要将Reliability Policy设置为Best Effort**
+  
+  ![image-20211111091016532](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题五：设置传感器/image-20211111091016532.png)
+  
+  **下方为PointCloud2的结果**
+  
+  ![image-20211111091141048](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题五：设置传感器/image-20211111091141048.png)
+  
   ![../../_images/demo_pointcloud2_rviz.png](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题五：设置传感器/demo_pointcloud2_rviz.png)
 
 
@@ -514,13 +528,13 @@ slam_toolbox与nav2_amcl都使用激光扫描信息去感知机器人周边的�
 
 **Costmap 2D**
 
-- costmap 以占用网格的形式使用传感器信息来描述机器人周边的环境。占用网格的单元格存储着0-254区间内的代价值，表示机器人穿过这些区域的代价。0代价表示单元格空闲，而254则表示单元格被完全占据。导航算法使用这两个极端情况之间的数值去引导机器人远离障碍。Nav2中的代价地图是由功能包nav2_costmap_2d实现的。
+- costmap 以占用网格（occupancy grid）的形式使用传感器信息来描述机器人周边的环境。占用网格的单元格存储着0-254区间内的代价值，表示机器人穿过这些区域的代价。0代价表示单元格空闲，而254则表示单元格被完全占据。导航算法使用这两个极端情况之间的数值去引导机器人远离障碍。Nav2中的代价地图是由功能包nav2_costmap_2d实现的。
 - costmap分层
-  - static layer：表示代价地图的地图部分，它根据如SALM发布的/map话题来获得消息。
-  - obstacle layer：包括由传感器检测到的物体，这些传感器可以发布LaserScan或者PointCloud2消息，也同时可以发布他们两个。
+  - static layer：表示代价地图的地图部分，它捕获发布到/map话题上的消息（比如由SLAM产生的）来构建这个部分。
+  - obstacle layer：体现的是由传感器检测到的物体（比如障碍物），这些传感器在探测过程中会发布LaserScan或者PointCloud2消息，也同时可以发布他们两个。
   - voxel layer：类似于obstacle layer，但它处理3D数据。
-  - range layer包含声呐和红外传感器提供的信息。
-  - inflation layer：表示围绕着致命障碍物的附加代价，用于帮助机器人躲避由于它的几何形状引发的碰撞。如果膨胀层被启用，那么需要用户指定一个膨胀半径。
+  - range layer：体现的是由声呐和红外传感器检测到的信息。
+  - inflation layer：表示环绕致命障碍物的附加代价，用于帮助机器人躲避由于它的几何形状引发的碰撞。如果膨胀层被启用，那么需要用户指定一个膨胀半径。
 
 更多的内容可以参考[ROS1 costmap_2D documentation](http://wiki.ros.org/costmap_2d)
 
@@ -674,6 +688,16 @@ local_costmap:
   ```
 
   ![../../_images/view_frames.png](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题五：设置传感器/view_frames.png)
+  
+  **事实上，执行的命令为**
+  
+  ```
+  ros2 run tf2_tools view_frames
+  ```
+  
+  **实际效果为**
+  
+  ![image-20211111105132921](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题五：设置传感器/image-20211111105132921.png)
 
 **启动Nav2**
 
@@ -714,6 +738,6 @@ global_costmap，local_costmap和检测到的障碍物的体素（体积元素vo
 
   ![../../_images/add_my_marker.png](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题五：设置传感器/add_my_marker.png)
 
-  然后将fixed frame设置为odom，
+  **然后将fixed frame设置为odom，**
 
   ![voxel](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题五：设置传感器/voxel_layer.png)

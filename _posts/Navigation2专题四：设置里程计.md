@@ -450,10 +450,12 @@ tags: odometry, ekf
      ros2 launch sam_bot_description display.launch.py
      ```
 
+     ![image-20211111085910499](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题四：设置里程计/image-20211111085910499.png)
+
      ![image-20211104150107345](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题四：设置里程计/image-20211104150107345.png)
 
    - 查看话题和节点信息
-
+   
      ```
      ros2 topic list
      ```
@@ -470,13 +472,13 @@ tags: odometry, ekf
      ![image-20211110223024176](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题四：设置里程计/image-20211110223024176.png)
 
      ![image-20211110223108300](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题四：设置里程计/image-20211110223108300.png)
-
+   
      **在sam_bot_description所在的工程目录下，source编译好的robot localization的setup.bash文件，然后再启动自己的launch文件**
      
      ![image-20211110223408257](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题四：设置里程计/image-20211110223408257.png)
      
      
-
+   
      **此处有一个问题，应为当前使用的是rolling版本，结果robot_localization的ekf_node节点无法启动，因此，两个话题依然没有订阅者。**
      
      ![image-20211104183102352](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题四：设置里程计/image-20211104183102352.png)
