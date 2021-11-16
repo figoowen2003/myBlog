@@ -6,7 +6,7 @@ tags: odometry, ekf
 
 # 里程计简介
 
-里程计系统基于机器人的运动对机器人的姿态和速度进行局部的精确估计。里程计信息的来源可以是IMU，LIDAR，RADAR，VIO以及车轮编码器等。需要注意的是，IMU会随时间发生漂移，而车轮编码器则是随行进距离发生漂移，因此往往将它们一起使用来抵消彼此的负面特性。
+里程计系统是基于机器人的运动来对机器人的姿态和速度进行局部的精确估计。里程计信息的来源可以是IMU，LIDAR，RADAR，VIO以及车轮编码器等。需要注意的是，IMU会随时间发生漂移，而车轮编码器则是随着行进距离发生漂移，因此往往将它们一起使用来抵消彼此的负面特性。
 
 - odom坐标系及其相关的变换使用机器人的里程计系统来发布定位信息，这个信息虽然连续但是会随着时间或距离（取决于传感器的模式和漂移）变得不太准确。即便如此，机器人仍然可以使用该信息来检测周边的人/物（如避障）
 
@@ -14,7 +14,7 @@ tags: odometry, ekf
 
 - odom坐标系通过odom=>base_link的变换来连接到机器人系统的其他部分和Nav2。这个坐标变换既可以由tf2 broadcaster来发布，也可以由其他框架如robot_localization来发布。
 
-- 除了需要odom=>base_link的变换外，Nav2还需要（其他节点）发布nav_msgs/Odometry消息，因为这个消息中包含了机器人的速度信息，它的具体格式如下
+- 除了需要odom=>base_link的变换外，Nav2还需要使用（其他节点）发布的nav_msgs/Odometry消息，因为这个消息中包含了机器人的速度信息，它的具体格式如下
 
   ```
   # This represents estimates of position and velocity in free space.
@@ -74,7 +74,7 @@ tags: odometry, ekf
      sudo apt install ros-<ros2-distro>-gazebo-ros-pkgs
      ```
 
-   - 修改sam_bot的URDF文件，原因是Gazebo使用SDF文件来描述一个机器人。幸运的是，Gazebo能够自动将具有兼容能力的URDF文件转换为SDF文件。URDF文件能够兼容Gazebo的主要条件就是必须在每一对<link>元素下具有<inertia>元素。在专题二中编写的URDF文件刚好满足了这个条件。
+   - 修改sam_bot的URDF文件，原因是Gazebo使用SDF文件来描述一个机器人。幸运的是，Gazebo能够自动将特定格式的URDF文件转换为SDF文件。URDF文件能够兼容Gazebo的主要条件就是每一对<link>元素下都必须有<inertia>元素。在专题二中编写的URDF文件刚好满足了这个条件。
 
 2. 在URDF文件中添加Gazebo控件
 

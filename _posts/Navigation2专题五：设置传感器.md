@@ -6,15 +6,15 @@ tags: costmap
 
 # 传感器简介
 
-移动机器人装备了大量的传感器来看见和感知周围的环境。这些传感器获取的信息能有用于构建和维护环境的地图，在地图上定位机器人以及观察环境中的障碍物。这些任务对于在动态环境中安全而有效地导航机器人至关重要。
+移动机器人装备了大量的传感器来看见和感知周围的环境。这些传感器获取的信息被用于构建和维护环境的地图，在地图上定位机器人以及观察环境中的障碍物。这些任务对于在动态环境中安全而有效地导航机器人至关重要。
 
-常用的传感器有lidar，radar，RGB camera，depth camera，IMU和GPS。为了标准化这些传感器的消息格式并让供应商之间更容易整合，ROS提供了sensor_msgs功能包来定义通用的传感器接口。这使得用户可以使用任意供应商的蟾片，只要它遵循了sensor_msgs的标准格式。
+常用的传感器有lidar，radar，RGB camera，depth camera，IMU和GPS。为了标准化这些传感器的消息格式并让供应商之间更容易整合，ROS提供了sensor_msgs功能包来定义通用的传感器接口。这使得用户可以使用任意供应商的产品，只要它遵循了sensor_msgs的标准格式。
 
 目前导航中常用的消息格式有：sensor_msgs/LaserScan，sensor_msgs/PointCloud2，sensor_mgs/Range，sensor_mgs/Image。此外，radar_msgs限用于特定的雷达传感器，vision_msgs功能包则定义了机器视觉中使用的消息，如故障检测、分割以及其他机器学习模型。举几个例子，vision_msgs/Classification2D`，`vision_msgs/Classification3D`，`vision_msgs/Detection2D`，和`vision_msgs/Detection3D。
 
 更多信息可以参考，[sensor_msgs](http://wiki.ros.org/sensor_msgs), [radar_msgs](http://wiki.ros.org/radar_msgs), and [vision_msgs](http://wiki.ros.org/vision_msgs).
 
-对于一个真实的物理机器人，它的传感器可能已经编写了ROS驱动程序（以node节点的形式，连接到传感器上，将传感器数据填写到消息中，然后发布工机器人使用），这些驱动程序遵循sensor_msgs中的标准接口。sensor_msgs功能包让我们能轻松使用不同供应商的传感器。
+对于一个真实的物理机器人，它的传感器可能已经编写了ROS驱动程序（以node节点的形式，连接到传感器上，将传感器数据填写到消息中，然后发布供机器人使用），这些驱动程序遵循sensor_msgs中的标准接口。sensor_msgs功能包让我们能轻松使用不同供应商的传感器。
 
 对于仿真的机器人，Gazebo提供了传感器插件来发布符合sensor_msgs标准的消息。
 
@@ -467,7 +467,7 @@ tags: costmap
   launch.actions.ExecuteProcess(cmd=['gazebo', '--verbose', '-s', 'libgazebo_ros_factory.so', world_path], output='screen'),
   ```
 
-- 修改CMakeList
+- 修改CMakeLists
 
   ```
   install(

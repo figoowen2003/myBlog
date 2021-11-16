@@ -17,7 +17,7 @@ tags: URDF, rviz, gazebo
 
 - 假设用户已经搭建好了ROS2的开发环境
 
-- 安装以下ROS2功能包，<ros2-distro>表示ros的版本，如foxy，rolling等
+- 安装以下ROS2功能包，<ros2-distro>表示ros的版本，如foxy，rolling，galactic等
 
   ```
   sudo apt install ros-<ros2-distro>-joint-state-publisher-gui
@@ -111,7 +111,7 @@ tags: URDF, rviz, gazebo
 
 5. 添加两个驱动轮。
 
-   为了避免代码重复，我们使用xacro中的宏macro来定义一个通用的车轮代码块
+   为了避免代码重复，我们使用xacro中的宏macro来定义一个通用的车轮模块
 
    ```
      <!-- Wheels -->
