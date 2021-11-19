@@ -137,3 +137,60 @@ spawn_entity = Node(package='gazebo_ros', node_executable='spawn_entity.py',
 
 ![image-20211118162624615](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题三：URDF补充知识/image-20211118162624615.png)
 
+
+
+# Gazebo与Rviz仿真同步
+
+## 问题：将turtlebot3的burger模型与turtlebot3_world世界导入到自定义的孵化器中，在Gazebo中运行该模型，接下来运行turtlebotbot3_navigation，发现无论如何操纵rviz中的2D Pose Estimate去初始化机器人的位置都不成功，自然向Nav2 Goal更是不可能完成。
+
+![image-20211119161029263](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题三：URDF补充知识/image-20211119161029263.png)
+
+具体操作步骤：
+
+- 从turtlebot3_gazebo源码中拷贝models文件夹中turtlebot3_burger以及turtlebot3_common文件夹到自定义工程的models文件夹下
+
+  ![image-20211119161324923](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题三：URDF补充知识/image-20211119161324923.png)
+
+- 拷贝turtlebot3的世界turtlebot3_world文件夹到自定义工程的models文件夹下
+
+- 修改自定义工程中的.world文件，此处名为warehouse.world
+
+  ![image-20211119161618152](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题三：URDF补充知识/image-20211119161618152.png)
+
+- 修改自定义工程中的launch文件
+
+  ![image-20211119161803619](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题三：URDF补充知识/image-20211119161803619.png)
+
+- 编译运行后，Gazebo正常加载世界与机器人模型，但如果启动nav2却无法加载机器人模型，更无法与Gazebo同步
+
+**原因：**
+
+​	**turtlebot3的模型由SDF格式来完成，rviz无法解析SDF文件，rviz只能解析URDF文件**
+
+**解决方法：**
+
+- 拷贝turtlebot3_gazebo源码models文件夹下的urdf文件夹到自定义工程的models文件夹下
+
+  ![image-20211119162915615](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题三：URDF补充知识/image-20211119162915615.png)
+
+- 修改自定义工程的launch文件，需要启动robot state publisher节点去接卸turtlebot3的urdf文件。拷贝turtlebot3_gazebo源码中的robot_state_publiser.launch.py到自定义工程的launch文件夹下，修改gazebo_world.launch.py文件
+
+  ![image-20211119164344927](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题三：URDF补充知识/image-20211119164344927.png)
+
+- 重新编译，运行，然后在新的terminal中启动nav2（自定义或者turtlebot3的nav2都行）
+
+  ![image-20211119164957893](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题三：URDF补充知识/image-20211119164957893.png)
+
+​		![image-20211119173051632](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题三：URDF补充知识/image-20211119173051632.png)
+
+![image-20211119173156082](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题三：URDF补充知识/image-20211119173156082.png)
+
+![](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题三：URDF补充知识/Peek 2021-11-19 17-33.gif)
+
+**注意**
+
+**warehouse.world文件中physics属性的设置会影响机器人的运行速度**
+
+![image-20211119173642564](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题三：URDF补充知识/image-20211119173642564.png)
+
+其中max_step_size设置过大，机器人会加速运行，而real_time_update_rate设置越大，整体运行速度越慢。
