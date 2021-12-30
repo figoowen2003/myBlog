@@ -219,4 +219,4 @@ int main()
 }
 ```
 
-此处，我们利用相同的key（the_answer）将输出端口与输入端口连接起来，即他们指向blackboard的同一个条目；这些端口可以互连也是因为他们的类型相同，都是std::string。
+此处，我们利用相同的key（the_answer）将输出端口与输入端口连接起来，即他们指向blackboard的同一个条目；这些端口可以互连也是因为他们的类型相同，都是std::string。SaySomethingSimple
