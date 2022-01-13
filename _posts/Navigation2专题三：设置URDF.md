@@ -6,9 +6,9 @@ tags: URDF, rviz, gazebo
 
 # URDF与Robot State Publisher
 
-- 使用Navigation2的要求之一是提供从base_link到不同传感器以及坐标系的转换。这棵转换树既可以是一个简单的树，它只包含一个从base_link到laser_link的转换，也可以是一棵由固定在不同位置的多个传感器组成的树，每个传感器都拥有自己的坐标系。Robot State Publiser提供了发布这些坐标变换的功能。
-- Robot State Publisher是一个与TF2交互的的ROS2功能包，它发布了所有必需的坐标变换，这些变换都能够从机器人的几何形状和结构中推导出来。我们需要为Robot State Publisher提供正确的URDF文件，它将根据URDF的内容自动处理需要发布的转换信息。这个方法在复杂的坐标变换中非常有用，当然在简单的变换树中也推荐使用该方法。
-- Universal Robot Descriptor File（URDF）是描述机器人模型的一个XML文件。此处，它将被用于构建与机器人几何形状相关的变换树，也会被用于定义可视化组件如材质和meshes，以便在RVIZ中显示机器人模型，此外，它还能定义机器人的物理属性，然后将这些属性应用于物理仿真器如Gazebo，以模拟机器人与环境的交互。
+- 使用Navigation2需要提供从base_link到不同传感器以及坐标系的转换。这棵转换树既可以是一个简单的树，它只包含一个从base_link到laser_link的转换，也可以是一棵由固定在不同位置的多个传感器组成的树，每个传感器都拥有自己的坐标系。Robot State Publiser提供了发布这些坐标变换的功能。
+- Robot State Publisher是一个与TF2交互的的ROS2功能包，它发布了所有必需的坐标变换，这些变换都能够从机器人的几何形状和结构中推导出来。我们需要为Robot State Publisher提供正确的URDF文件，它将根据URDF的内容自动处理需要发布的转换信息。这个方法在复杂的坐标变换中非常有用，当然即便只是使用简单的变换树也推荐使用该方法。
+- Universal Robot Descriptor File（URDF）是描述机器人模型的XML文件。它被用于构建与机器人几何形状相关的变换树，并且文件中也定义了可视化组件如材质和meshes，以便在RVIZ中显示机器人模型，此外，它还能定义机器人的物理属性，然后将这些属性应用于物理仿真器如Gazebo，以模拟机器人与环境的交互。
 - URDF支持Xacro（XML宏），这些宏用于消除URDF中的重复模块。
 
 
@@ -17,7 +17,7 @@ tags: URDF, rviz, gazebo
 
 - 假设用户已经搭建好了ROS2的开发环境
 
-- 安装以下ROS2功能包，<ros2-distro>表示ros的版本，如foxy，rolling，galactic等
+- 安装以下ROS2功能包，<ros2-distro>表示ros的版本，如foxy，rolling，galactic等，推荐安装最新的galactic版本
 
   ```
   sudo apt install ros-<ros2-distro>-joint-state-publisher-gui
@@ -68,7 +68,7 @@ tags: URDF, rviz, gazebo
      <xacro:property name="caster_xoff" value="0.14"/>
    ```
 
-   名为base_*的属性定义的是与机器人本体相关的变量
+   名为base_*的属性定义的是与机器人本体相关的变量（长，宽，高等）
 
    wheel_radius和wheel_width定义了机器人两个轮子的形状
 
@@ -78,7 +78,7 @@ tags: URDF, rviz, gazebo
 
    caster_xoff是万向轮在x轴方向的位置
 
-3. 定义base_link作为机器人的本体，我们将它设置为一个矩形。在URDF中一个link表示机器人的刚性组件。再完成这些link定义之后，robot state publisher将根据这些定义来确定每个link的坐标系并发布它们之间的变换。
+3. 定义base_link。base_link是机器人本体的常用名称，我们将它设置为一个矩形。在URDF中一个link表示机器人的刚性组件。完成刚性组件base_link定义之后，robot state publisher将link中设置的变量来确定每个link的坐标系并发布它们之间的变换。
 
    ```
      <!-- Robot Base -->
@@ -94,9 +94,9 @@ tags: URDF, rviz, gazebo
      </link>
    ```
 
-4. 定义base_footprint link。这个link是一个虚拟的link，它没有尺寸或碰撞区域。定义它的主要目的是让不同的功能包能够确定机器人投影到地面的中心。比如，Navigation2使用这个link来确定避障算法中圆形足迹的中心。
+4. 定义base_footprint。该link不是一个物理实体意义上的link，它没有尺寸或碰撞区域。定义它的主要目的是让不同的功能包能够确定机器人投影到地面的中心。比如，Navigation2使用这个link来确定避障算法中圆形足迹的中心。
 
-   在完成link的定义后，还需要定义joint元素来描述坐标系之间的运动学和动力学属性。我们使用一个fixed类型的joint将base_footprint放置到合适的位置，此处是机器人本体的中心在地面的投影。
+   在完成link的定义后，如果存在多个link，那么还需要进一步添加joint元素来描述坐标系之间的运动学和动力学特性。我们使用一个fixed类型的joint将base_footprint放置到合适的位置，此处是机器人本体的中心在地面的投影。
 
    ```
      <!-- Robot Footprint -->
@@ -140,8 +140,8 @@ tags: URDF, rviz, gazebo
      <xacro:wheel prefix="drivewhl_r" x_reflect="-1" y_reflect="-1" />
    ```
 
-   此处prefix是link和joint的前缀，x_reflect和y_reflect则是车轮相对于x轴和y轴的翻转，接下来是定义轮子的视觉属性，最后是轮子旋转的关节定义。
-   最后的两行是调用宏定义去实例化需要的车轮
+   此处prefix是link和joint的前缀，x_reflect和y_reflect则是车轮相对于x轴和y轴的翻转，接下来是定义轮子的视觉属性（如颜色），最后是轮子旋转的关节定义。
+   最后的两行是调用宏定义去实例化左右两个车轮。
 
 6. 添加万向轮
 
@@ -336,7 +336,7 @@ tags: URDF, rviz, gazebo
 
 # 添加物理属性
 
-- 让我们的URDF文件包含一些机器人的运动学属性，这样物理仿真器如Gazebo就可以利用这些信息去模拟机器人在虚拟环境中的行为。
+- 如果这个URDF文件包含一些机器人的运动学属性，那么物理仿真器如Gazebo就可以利用这些信息去模拟机器人在虚拟环境中的行为。
 
 - 需要给机器人的本体增加惯性矩阵，我们也是用macro方式来封装这个模块
 
