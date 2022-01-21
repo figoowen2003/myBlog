@@ -8,12 +8,7 @@ tags:
 
 以libgazebo_ros_ray_sensor.so为例，它用于模拟一个激光雷达传感器。
 
-## 1. 默认的topic
-
-```
-```
-
-## 2. 在URDF/SDF文件中设置topic
+## 1. 在URDF/SDF文件中设置topic
 
 ```
 	 <sensor name="laser" type="ray">
@@ -119,7 +114,7 @@ tags:
 
 ![image-20211118161750011](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题三：URDF补充知识/image-20211118161750011.png)
 
-## 3. 在Launch文件中设置topic
+## 2. 在Launch文件中设置topic
 
 ```
 spawn_entity = Node(package='gazebo_ros', node_executable='spawn_entity.py',
@@ -129,7 +124,7 @@ spawn_entity = Node(package='gazebo_ros', node_executable='spawn_entity.py',
 
 ![image-20211118162116545](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题三：URDF补充知识/image-20211118162116545.png)
 
-在arguments参数列表中，第二个参数'demo'代表命名空间，因此在孵化机器人模型的过程中会为机器人的参数如topic添加该命名空间，并且此处设置的topicde 命名空间优先级在SDF或者URDF文件之上。
+在arguments参数列表中，第二个参数'demo'代表命名空间，因此在孵化机器人模型的过程中会为机器人的参数如topic添加该命名空间，并且此处设置的topic的命名空间优先级高于SDF或者URDF文件中的配置。
 
 需要将第二个参数设置为空
 
@@ -141,7 +136,7 @@ spawn_entity = Node(package='gazebo_ros', node_executable='spawn_entity.py',
 
 # Gazebo与Rviz仿真同步
 
-## 问题：将turtlebot3的burger模型与turtlebot3_world世界导入到自定义的孵化器中，在Gazebo中运行该模型，接下来运行turtlebotbot3_navigation，发现无论如何操纵rviz中的2D Pose Estimate去初始化机器人的位置都不成功，自然向Nav2 Goal更是不可能完成。
+**问题：将turtlebot3的burger模型与turtlebot3_world世界导入到自定义的孵化器中，在Gazebo中运行该模型，接下来运行turtlebotbot3_navigation，发现无论如何操纵rviz中的2D Pose Estimate去初始化机器人的位置都不成功，自然向Nav2 Goal更是不可能完成。**
 
 ![image-20211119161029263](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题三：URDF补充知识/image-20211119161029263.png)
 

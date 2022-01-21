@@ -6,15 +6,15 @@ tags: odometry, ekf
 
 # 里程计简介
 
-里程计系统是基于机器人的运动来对机器人的姿态和速度进行局部的精确估计。里程计信息的来源可以是IMU，LIDAR，RADAR，VIO以及车轮编码器等。需要注意的是，IMU会随时间发生漂移，而车轮编码器则是随着行进距离发生漂移，因此往往将它们一起使用来抵消彼此的负面特性。
+里程计系统基于机器人的运动来对机器人的姿态和速度进行局部的精确估计。里程计信息的来源包括IMU，LIDAR，RADAR，VIO以及车轮编码器等。需要注意的是，IMU的数据会随时间发生漂移，而车轮编码器的数据则是随着行进距离发生漂移，因此往往将它们一起使用来抵消彼此的负面特性。
 
-- odom坐标系及其相关的变换使用机器人的里程计系统来发布定位信息，这个信息虽然连续但是会随着时间或距离（取决于传感器的模式和漂移）变得不太准确。即便如此，机器人仍然可以使用该信息来检测周边的人/物（如避障）
+- odom坐标系以及与之相关的坐标变换系统使用机器人的里程计系统来发布定位信息，定位信息连续但会随着时间或距离（取决于传感器的模式和漂移）变得不太准确。即便如此，机器人仍然可以使用该信息来检测周边的人/物（如避障）
 
-- map坐标系提供了全局的精确信息来纠正odom坐标系，以获得持续的精确的随时间变化的里程计信息。
+- map坐标系提供了全局的精确信息来纠正odom坐标系，以获得持续而精确的随时间变化的里程计信息。
 
-- odom坐标系通过odom=>base_link的变换来连接到机器人系统的其他部分和Nav2。这个坐标变换既可以由tf2 broadcaster来发布，也可以由其他框架如robot_localization来发布。
+- odom坐标系通过odom=>base_link的坐标变换连接到机器人系统的其他部分，变换后的结果才能够被Nav2所使用。这个坐标变换既可以由tf2 broadcaster来发布，也可以由其他框架如robot_localization来发布。
 
-- 除了需要odom=>base_link的变换外，Nav2还需要使用（其他节点）发布的nav_msgs/Odometry消息，因为这个消息中包含了机器人的速度信息，它的具体格式如下
+- 除了需要odom=>base_link的变换外，Nav2还需要使用（其他节点）发布的nav_msgs/Odometry消息，因为这个消息提供了机器人的速度信息，它的具体格式如下
 
   ```
   # This represents estimates of position and velocity in free space.
@@ -34,31 +34,52 @@ tags: odometry, ekf
   geometry_msgs/TwistWithCovariance twist
   ```
 
-  这个消息提供了机器人位姿和速度的估计值，其中header消息提供了在给定的坐标系中带时间戳的数据，pose消息提供了机器人相对于指定坐标系（由header.frame_id指定）的位置和方向。twist消息给出了指定坐标系（child_frame_id指定）中的角速度和线速度。
-
-
+  这个消息提供了机器人位姿和速度的估计值，其中header消息提供了时间戳与父坐标系的id，pose消息提供了机器人相对于指定坐标系（由header.frame_id指定的父坐标系）的位置和方向。twist消息给出了指定坐标系（child_frame_id指定）中的角速度和线速度。
+  
+  以下是Header的定义
+  
+  ```
+  # Standard metadata for higher-level stamped data types.
+  
+  # This is generally used to communicate timestamped data
+  
+  # in a particular coordinate frame.
+  
+  
+  # Two-integer timestamp that is expressed as seconds and nanoseconds.
+  
+  builtin_interfaces/Time stamp
+  
+  # Transform frame with which this data is associated.
+  # 用于表示和此数据关联的帧，在坐标系变化中可以理解为数据所在的坐标系名称
+  string frame_id
+  ```
+  
+  
 
 # 设置机器人的里程计
 
-机器人可以使用哪些里程计传感器决定了如何为它设置Nav的里程计系统。这里将使用一些基础的例子来帮助你配置机器人的Nav2。
+我们应当根据机器人实体使用的里程计传感器类型来决定如何为它设置Nav2的里程计系统。这里将使用一些基础的例子来帮助你配置机器人的Nav2。
 
 以车轮编码器作为机器人的里程计来源。
 
-- Nav2本身不需要车轮编码器。设置里程计的目的是计算里程计信息、发布nav_msgs/Odometry消息和odom=>base_link的转换。
+- Nav2本身不需要车轮编码器。设置里程计是为了计算里程计信息、发布nav_msgs/Odometry消息和执行odom=>base_link的转换。
 
-- 车轮编码器信息到里程计信息的公式如下：
+- 通过TF2来发布nav_msgs/Odometry的消息
+
+  车轮编码器信息到里程计信息的公式如下：
 
   ```
   linear = (right_wheel_est_vel + left_wheel_est_vel) / 2
   angular = (right_wheel_est_vel - left_wheel_est_vel) / wheel_separation;
   ```
 
-  right_wheel_est_vel和left_wheel_est_vel分别是左右轮的估计速度，它们能通过获取车轮中轴随时间变化的位置关系来简单的获得。wheel_separation是车轮之间的距离。这些信息都被用于发布Nav2需要的消息，详情参考http://wiki.ros.org/navigation/Tutorials/RobotSetup/Odom/。
+  right_wheel_est_vel和left_wheel_est_vel分别是左右轮的估计速度，它们能通过获取车轮中轴随时间变化的位置关系来简单的获得。wheel_separation是车轮之间的距离。这些信息都被用于发布Nav2需要的消息，发布的方式详情参考http://wiki.ros.org/navigation/Tutorials/RobotSetup/Odom/。
 
-- 通过ros2_control框架来手动发布这些消息。ros2_control矿建包含了可以实时控制机器人的不同ROS2功能包。
+- 另一种方式则是通过ros2_control框架来手动发布这些消息。ros2_control框架包含了用于实时操控机器人的不同ROS2功能包。
 
-  - 对于车轮编码器，提供了diff_drive_controller（位于ros2_controller功能包中），它订阅了cmd_vel话题，提取其中的geometry_msgs/Twist消息，计算出里程计信息并以odom话题为载体发布nav_msgs/Odometry消息。
-  - 其他的功能包则会去处理其他类型的传感器。
+  - 对于车轮编码器，该框架提供了diff_drive_controller节点（差速驱动控制，位于ros2_controller功能包中）去订阅了cmd_vel话题，提取其中的geometry_msgs/Twist消息，计算出里程计信息并以odom话题为载体发布nav_msgs/Odometry消息。
+  - ros2_control中还包含与其他传感器匹配的功能包。
 
 - 始终记住，Nav2需要nav_msgs/Odometry和odom=>base_link变换，这就是设置里程计系统的目的。
 
@@ -68,7 +89,7 @@ tags: odometry, ekf
 
 1. 前置条件，假设Gazebo已经安装
 
-   - 安装gazebo_ros_pkgs来模拟里程计，并在Gazebo中用ROS2来控制机器人
+   - 需要安装gazebo_ros_pkgs来模拟里程计，并在Gazebo中用ROS2来控制机器人
 
      ```
      sudo apt install ros-<ros2-distro>-gazebo-ros-pkgs
@@ -78,11 +99,11 @@ tags: odometry, ekf
 
 2. 在URDF文件中添加Gazebo控件
 
-   将添加一个IMU传感器
+   添加一个IMU传感器模型插件
 
-   - GazeboRosImuSensor是一个传感器控件，它需要被添加到一个imu_link上。
+   - 创建一个imu_link，imu_link将被<gazebo>元素所引用。
 
-   - imu_link将被<gazebo>元素所引用。
+   - 在该link的标签内添加IMU传感器插件。GazeboRosImuSensor是由Gazebo提供的传感器控件。
 
    - /demo/imu将被作为发布IMU信息的话题，同时根据REP145的约定，initalOrientationAsReference这个变量需要被设置为false
 
@@ -183,15 +204,15 @@ tags: odometry, ekf
      </gazebo>
      ```
 
-   添加一个差速驱动
+   添加一个差速驱动模型插件
 
    - 添加差速驱动模型插件（ModelPlugin），通过配置这个插件，便可以通过话题/demo/odom来发布nav_msgs/Odometry消息。
 
-   - 左右轮的关节将被设置为sam_bot的车轮关节
+   - left_joint与right_joint被设置为sam_bot的车轮关节
 
-   - 车轮分离距离和直径将根据wheel_ygap和wheel_radius的值来确定
+   - 车轮间距wheel_separation和直径wheel_diameter根据变量wheel_ygap（y轴方向轮子与机器人本体的间隙）和wheel_radius的值来确定
 
-   - 具体操作为，在标签</gazebo>下面一行插入以下内容
+   - 具体添加方法为，在上一部分的标签</gazebo>下面一行插入以下内容
 
      ```
      <gazebo>
@@ -227,7 +248,7 @@ tags: odometry, ekf
 
    - 编辑launch文件：删除joint state publiser的GUI节点，添加孵化sam_bot的节点
 
-     删除
+     删除以下两部分内容
 
      ```
      joint_state_publisher_gui_node = launch_ros.actions.Node(
@@ -242,7 +263,7 @@ tags: odometry, ekf
      joint_state_publisher_gui_node,
      ```
 
-     添加
+     添加以下内容
 
      ```
      launch.actions.ExecuteProcess(cmd=['gazebo', '--verbose', '-s', 'libgazebo_ros_factory.so'], output='screen'),
@@ -299,7 +320,7 @@ tags: odometry, ekf
      
      可见/demo/imu话题发布了sensor_msgs/msg/Imu类型的消息，/demo/odom话题发布了nav_msgs/msg/Odometry类型的消息。这两个消息来自Gazebo对IMU传感器和差速驱动器的模拟。
      
-     我们还需要注意，以上两个话题都没有订阅者。接下来我们将创建一个robot_localization节点去订阅它们，随后该节点还会使用两个话题发布的消息去为Nav2融合出一个局部精确且平滑的里程计信息。
+     我们还需要注意，以上两个话题都没有订阅者。接下来我们将创建一个robot_localization节点去订阅它们，随后该节点还会融合这两个消息携带的数据来生成一个局部精确且平滑的里程计信息，最终供Nav2使用。
      
      下图是rqt_graph的结果
      
@@ -309,18 +330,18 @@ tags: odometry, ekf
 
 # Robot Localization Demo
 
-1. robot_localization功能包根据来自不同里程计传感器的数据，将他们融合成一个局部精确且平滑的历程及信息。它能够接收的数据类型包括nav_msgs/Odometry，sensor_msgs/Imu，geometry_msgs/PoseWithCovarianceStamped以及geometry_msgs/TwistWithCovarianceStamped。
+1. robot_localization功能包接收来自不同里程计传感器的数据，将他们融合成一个局部精确且平滑的里程计信息。它能够接收的数据类型包括nav_msgs/Odometry，sensor_msgs/Imu，geometry_msgs/PoseWithCovarianceStamped以及geometry_msgs/TwistWithCovarianceStamped。
 
 2. robot_localization基本原理
 
-   - 通常一个机器人至少以一个车轮编码器和一个IMU来组成它的里程计传感器。当多个传感器数据被提供给robot_localization后，它能够利用状态估计节点（state estimation nodes）来融合这些传感器数据。
+   - 通常一个机器人至少使用一个车轮编码器和一个IMU来组成它的里程计传感器。当多个传感器数据被提供给robot_localization后，它能够利用状态估计节点（state estimation nodes）来融合这些传感器数据。
 
    - 状态估计节点要么使用扩展的卡尔曼滤波（Extended Kalman filter, ekf_node），要么使用无迹卡尔曼滤波（Unscented Kalman filter, ukf_node）来实现融合。
 
-   - 此外robot_localization功能包还实现了navsat_transform_node，它被用于在使用GPS时，将地理坐标系转换为机器人的时间坐标系。
-   - 在使能robot_localization配置的条件下，融合的传感器数据将被以odometry/filtered以及accel/filtered两个话题的方式发布。
+   - 此外robot_localization功能包还实现了navsat_transform_node，它被用于在使用GPS时，将地理坐标系转换为机器人的世界坐标系。
+   - 如果在配置文件中使能robot_localization功能包，它会通过odometry/filtered以及accel/filtered两个话题来发布融合后的传感器数据。
    - 此外robot_localization还将通过/tf话题去发布odom=>base_link的变换关系。
-   - 如果机器人只有一个里程计源，我们依然可以使用robot_localization接收数据然后完成除了平滑之外的最小程度的处理。当然，在这种情况下，一个替代方式就是通过tf2的broadcaster在里程计节点的单一源中去发布变换。你也可以选择robot_localization去发布变换，并且也可以在输出结果中观测一些平滑的属性。
+   - 如果机器人只有一个里程计源，我们依然可以使用robot_localization接收数据，然后完成除了平滑之外的最小处理。当然，在这种情况下，一个替代方式就是通过tf2的broadcaster在里程计节点的单一源中去发布变换。你也可以选择robot_localization去发布变换，并且也可以在输出结果中观测一些平滑的属性。
 
 3. 配置Robot Localization
 
@@ -388,13 +409,13 @@ tags: odometry, ekf
 
      为了添加一个传感器的输入到ekf_filter_node，需要在基本名字（odom，imu，pose，twist）之后添加数字序号。在本例中，只有一个nav_msgs/Odometry和一个sensor_msgs/Imu作为滤波器的输入，因此只需使用odom0和imu0。
 
-     我们可以通过_config参数来指定一个传感器的哪些数值将被滤波器使用。这些数值的含义一次为x, y, z, roll, pitch, yaw, vx, vy, vz, vroll, vpithc, vyaw, ax, ay, az。
+     我们可以通过_config参数来指定一个传感器的哪些数值将被滤波器使用。这些数值的含义依次为x, y, z, roll, pitch, yaw, vx, vy, vz, vroll, vpithc, vyaw, ax, ay, az。
 
-     本demo中，我们将odom0_config的抵1，2，3和12个元素设置为true，这表示滤波器仅仅使用odom0的x, y, z和vyaw的值。
+     本demo中，我们将odom0_config的第1，2，3和12个元素设置为true，这表示滤波器仅仅使用odom0的x, y, z和vyaw的值。
 
      在imu0_config矩阵中，只有roll，pitch和yaw被使用。典型的移动机器人级别的IMU还将提供角速度和线性加速度。
 
-     为了确保robot_localization能够正常工作，不应该将那些可以彼此衍生的领域数据进行融合。比如角速度被融合到IMU内部以提供roll，pitch和yaw的估计值，我们就不应该在robot_localization中融合角速度。此外，我们不融合角速度还因为它在不使用所期望的高质量(昂贵)IMU时具有噪声特性。
+     为了确保robot_localization能够正常工作，不应该将那些可以彼此衍生的领域数据进行融合。比如角速度被融合到IMU内部以提供roll，pitch和yaw的估计值，我们就不应该在robot_localization中融合角速度。此外，我们不融合角速度还因为如果不使用高质量(昂贵)IMU时它具有噪声特性。
 
 4. 编译和运行
 
