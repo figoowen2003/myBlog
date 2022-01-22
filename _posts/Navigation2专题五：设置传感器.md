@@ -6,15 +6,15 @@ tags: costmap
 
 # 传感器简介
 
-移动机器人装备了大量的传感器来看见和感知周围的环境。这些传感器获取的信息被用于构建和维护环境的地图，在地图上定位机器人以及观察环境中的障碍物。这些任务对于在动态环境中安全而有效地导航机器人至关重要。
+移动机器人装备了大量的传感器，因此它们能够看见和感知周围的环境。这些传感器获取的信息被用于构建和维护环境地图、在地图上定位机器人以及观察环境中的障碍物。这些任务对于在动态环境中安全而有效地导航机器人至关重要。
 
-常用的传感器有lidar，radar，RGB camera，depth camera，IMU和GPS。为了标准化这些传感器的消息格式并让供应商之间更容易整合，ROS提供了sensor_msgs功能包来定义通用的传感器接口。这使得用户可以使用任意供应商的产品，只要它遵循了sensor_msgs的标准格式。
+常用的传感器有lidar，radar，RGB camera，depth camera，IMU和GPS。为了统一这些传感器的消息格式以便传感器供应商之间更容易合作，ROS提供了sensor_msgs功能包来定义通用的传感器接口。这使得用户可以使用任意供应商的产品，只要它遵循了sensor_msgs的标准格式。
 
 目前导航中常用的消息格式有：sensor_msgs/LaserScan，sensor_msgs/PointCloud2，sensor_mgs/Range，sensor_mgs/Image。此外，radar_msgs限用于特定的雷达传感器，vision_msgs功能包则定义了机器视觉中使用的消息，如故障检测、分割以及其他机器学习模型。举几个例子，vision_msgs/Classification2D`，`vision_msgs/Classification3D`，`vision_msgs/Detection2D`，和`vision_msgs/Detection3D。
 
 更多信息可以参考，[sensor_msgs](http://wiki.ros.org/sensor_msgs), [radar_msgs](http://wiki.ros.org/radar_msgs), and [vision_msgs](http://wiki.ros.org/vision_msgs).
 
-对于一个真实的物理机器人，它的传感器可能已经编写了ROS驱动程序（以node节点的形式，连接到传感器上，将传感器数据填写到消息中，然后发布供机器人使用），这些驱动程序遵循sensor_msgs中的标准接口。sensor_msgs功能包让我们能轻松使用不同供应商的传感器。
+对于一个真实的物理机器人，它的传感器可能已经拥有了ROS驱动程序（以node节点的形式，连接到传感器上，将传感器数据填写到消息中，然后发布供机器人使用），这些驱动程序遵循sensor_msgs中的标准接口。sensor_msgs功能包让我们能轻松使用不同供应商的传感器。
 
 对于仿真的机器人，Gazebo提供了传感器插件来发布符合sensor_msgs标准的消息。
 
@@ -22,19 +22,19 @@ tags: costmap
 
 **sensor_msgs/LaserScan**
 
-它来自平面激光的单次扫描，它被slam_toolbox和nav2_amcl功能包用于定位和建图，或者被nav2_costmap_2d功能包用于感知。
+它来自平面激光的单次扫描，它被slam_toolbox和nav2_amcl功能包所使用，来完成定位和建图的任务，也可以被nav2_costmap_2d功能包用于感知任务。
 
 ![../../_images/sensor_laserscan.png](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题五：设置传感器/sensor_laserscan.png)
 
 **sensor_msgs/PointCloud2**
 
-它是一个3D点的集合，以及每个点的可选的附加信息。它来自一个3D lidar，2D lidar，一个深度相机或者其设备。
+这个消息持有了一个3D点的集合，以及关于每个点的可选附加信息。它的来源可以是3D lidar，2D lidar，深度相机或者其设备。
 
 ![../../_images/sensor_pointcloud2.png](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题五：设置传感器/sensor_pointcloud2.png)
 
 **sensor_msgs/Range**
 
-它是一个来自活跃的测距仪单一的距离读数，测距仪发出能量射线并报告一个沿着弧形距离的有效读数。如声呐、红外传感器或一维测距仪。
+它是一个来自活跃测距仪的单一距离读数，测距仪发出能量射线，随后报告一个沿着弧线测量距离的有效读数。如声呐、红外传感器或一维测距仪。
 
 ![../../_images/sensor_range.png](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题五：设置传感器/sensor_range.png)
 
@@ -52,7 +52,7 @@ tags: costmap
 
 **向URDF文件添加Gazebo插件**
 
-- 添加lidar到sam_bot，打开文件sam_bot_description.urdf，在</robot>标签之前插入以下内容
+- **添加lidar到sam_bot**，打开文件sam_bot_description.urdf，在</robot>标签之前插入以下内容
 
   ```
   <link name="lidar_link">
@@ -121,7 +121,7 @@ tags: costmap
 
   在这段代码中，我们创建了一个lidar_link，它被gazebo_ros_ray_sensor插件引用为添加传感器的位置。我们还设置了模拟的lidar扫描和范围属性，/scan作为发送sensor_msgs/LaserScan消息的话题。
 
-- 添加深度相机到sam_bot，在上一段的</gazebo>标签后插入以下内容
+- **添加深度相机到sam_bot**，在上一段的</gazebo>标签后插入以下内容
 
   ```
   <link name="camera_link">
@@ -198,7 +198,7 @@ tags: costmap
   </gazebo>
   ```
 
-  同样，我们创建了一个camera_link，它被gazebo_ros_camera插件引用来作为添加传感器的位置。我们还创建了一个camera_depth_frame依附于camera_link上，它被设置为深度相机插件的<frameName>。我们设置这个插件分别用/depth_camera/image_raw和/depth_camera/points两个话题来发布sensor_msgs/Image和sensor_msgs/PointCloud2两个消息。最后我们做了一些其他的基本配置。
+  同样，我们创建了一个camera_link，它被gazebo_ros_camera插件引用来作为添加传感器的位置。我们还创建了一个camera_depth_frame依附于camera_link上，它被设置为深度相机插件的<frameName>。我们为这个插件设置了话题/depth_camera/image_raw和/depth_camera/points来发布sensor_msgs/Image和sensor_msgs/PointCloud2两个消息。最后我们做了一些其他的基本配置。
 
 **编译与运行**
 
@@ -522,7 +522,7 @@ tags: costmap
 
 slam_toolbox是一个具备2D SLAM能力的ROS2工具集，也是Nav2官方支持的SLAM库之一。当你需要在机器人中配置SLAM时，官方推荐使用slam_toolbox工具集。此外nav2_amcl功能包也可以实现定位，它使用自适应蒙特卡洛方法（Adaptive Monte Carlo Localization）去估计机器人在地图中的位姿和方向。
 
-slam_toolbox与nav2_amcl都使用激光扫描信息去感知机器人周边的环境。因此，为了验证它们是否可以访问激光扫描传感器的读数，我们必须确保它们都订阅了sensor_msgs/LaserScan对应的正确话题。这个可以通过设置它们的scan_topic参数来实现。目前sensor_msgs/LaserScan消息发送到/scan话题中是一种默认的约定，因此，scan_topic要被设置为/scan。
+slam_toolbox与nav2_amcl都采用激光扫描信息去感知机器人周边的环境。因此，为了验证它们是否可以访问激光扫描传感器的读数，我们必须确保它们都订阅了sensor_msgs/LaserScan对应的正确话题。这个可以通过设置它们的scan_topic参数来实现。目前sensor_msgs/LaserScan消息发送到/scan话题中是一种默认的约定，因此，scan_topic要被设置为/scan。
 
 如果需要更深入的了解完整的参数配置过程，请参考[Github repository of slam_toolbox](https://github.com/SteveMacenski/slam_toolbox#readme)与[AMCL Configuration Guide](https://navigation.ros.org/configuration/packages/configuring-amcl.html)。
 
@@ -531,7 +531,7 @@ slam_toolbox与nav2_amcl都使用激光扫描信息去感知机器人周边的�
 - costmap 以占用网格（occupancy grid）的形式使用传感器信息来描述机器人周边的环境。占用网格的单元格存储着0-254区间内的代价值，表示机器人穿过这些区域的代价。0代价表示单元格空闲，而254则表示单元格被完全占据。导航算法使用这两个极端情况之间的数值去引导机器人远离障碍。Nav2中的代价地图是由功能包nav2_costmap_2d实现的。
 - costmap分层
   - static layer：表示代价地图的地图部分，它捕获发布到/map话题上的消息（比如由SLAM产生的）来构建这个部分。
-  - obstacle layer：体现的是由传感器检测到的物体（比如障碍物），这些传感器在探测过程中会发布LaserScan或者PointCloud2消息，也同时可以发布他们两个。
+  - obstacle layer：体现的是由传感器检测到的物体（比如障碍物），这些传感器在探测过程中会发布LaserScan或者PointCloud2消息，也同时可以发布他们两个消息。
   - voxel layer：类似于obstacle layer，但它处理3D数据。
   - range layer：体现的是由声呐和红外传感器检测到的信息。
   - inflation layer：表示环绕致命障碍物的附加代价，用于帮助机器人躲避由于它的几何形状引发的碰撞。如果膨胀层被启用，那么需要用户指定一个膨胀半径。
@@ -622,7 +622,7 @@ local_costmap:
 
 - local_costmap：用于短周期规划与避障。
 
-- 我们需要配置的图层需要在plugins参数中配置，如global_costmap中的13行以及local_costmap中的50行。这些图层名以列表的形式存储，他们也是之后每一个图层参数的命名空间。每一个图层都需要一个plugin参数用于定义为其加载的插件类型。
+- 我们需要配置的图层需要在plugins参数中配置，如global_costmap中的13行（plugins: 这行）以及local_costmap中的50行。这些图层名以列表的形式存储，他们也是之后每一个图层参数的命名空间。每一个图层都需要一个plugin参数用于定义为其对应的插件类型。
 
 - static layer：map_subsrcribe_transient_local参数为True，它设置的是map话题的Qos。而map_topic这是设置了订阅的map话题名，如果没有写则默认为/map。
 
@@ -642,6 +642,8 @@ local_costmap:
       topic: /depth_camera/points
       data_type: "PointCloud2"
   ```
+
+  ![image-20220122183411497](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题五：设置传感器/image-20220122183411497.png)
 
   publish_voxel_map设置为True以使能3D网格的发布。z_resolution高度上的分辨率，而每列中voxel的数量则是用z_voxels定义。mark_threshold设置每一列中voxel的最小数量来作为占用网格中被占用的标记。observation_sources与obstacle layer类似。
 
@@ -728,7 +730,7 @@ global_costmap，local_costmap和检测到的障碍物的体素（体积元素vo
 
   ![../../_images/local_costmap_rviz.png](https://navigation.ros.org/_images/local_costmap_rviz.png)
 
-- 可视化障碍物的体素，输入命令
+- 可视化障碍物的体素（voxel），输入命令
 
   ```
   ros2 run nav2_costmap_2d nav2_costmap_2d_markers voxel_grid:=/local_costmap/voxel_grid visualization_marker:=/my_marker
