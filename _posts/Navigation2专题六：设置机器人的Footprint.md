@@ -383,16 +383,20 @@ tags:
 - 接下来，为了简单起见，使用tf2_ros中的static_transform_publiser来发布map=>odom的坐标变换。
 
   ```
+  ros2 run tf2_ros static_transform_publisher 0 0 0 0 0 0 map odom
   ```
 
 - 最后，启动Nav2，并使用nav_params.yaml
 
   ```
+  ros2 launch nav2_bringup navigation_launch.py params_file:=<full/path/to/config/nav2_params.yaml>
   ```
+
+  params_file后面为文件绝对路径比如ros2 launch nav2_bringup navigation_launch.py params_file:=/home/ubuntu-ros2/robot_sim/src/sam_bot_description/config/nav2_params.yaml
 
 - 在Rviz中可视化局部代价地图的足迹
 
-  Rviz左侧窗口中电机add，选中By topic标签，选择/local_costmap/published_footprint话题下的Polygon
+  Rviz左侧窗口中点击add按钮，选中By topic标签，选择/local_costmap/published_footprint话题下的Polygon
 
   ![../../_images/add_topic_local_costmap.png](/home/ubuntu-ros2/myBlog/source/_posts/Navigation2专题六：设置机器人的Footprint/add_topic_local_costmap.png)
 
