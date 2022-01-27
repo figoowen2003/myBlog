@@ -6,11 +6,11 @@ tags:
 
 # 规划器与控制器服务器（Planner and Controller Servers）
 
-- Nav2中实现导航算法的三大插件服务器：规划器、控制器和恢复服务器，它们都是运行在ROS的action服务器。
+- Nav2中导航算法的实现依赖于基于ROS动作服务器的三大类型插件集：规划器、控制器和恢复器服务器。
 - 本文中的规划器服务器与控制器服务器是导航的核心，它们可以实现一个或多个算法插件，每个插件都拥有为特定的动作或者机器人状态量身定制的配置。
 - 当然除了这两个服务器，其他服务器如恢复器、平滑器等等由于都不是基于硬件或者环境，而是基于应用来提供一般性的服务建议。
-- 规划器服务器负责实现计算机器人路径的算法。比如，一个插件被配置为计算两个相关位置的最短距离，另一个插件则是计算可以覆盖机器人所在环境的全部路径。
-- 控制器服务器负责生成机器人在本地环境中完成任务所需要的适当的控制工作。这些任务包括但不限于：跟随一条有规划器服务器产生的路径，沿着这条路径躲避动态障碍物，甚至是去扩展坞充电。
+- 规划器服务器负责实现计算机器人路径的算法。比如，一个插件被配置为计算两个相关位置的最短距离，另一个插件则用于计算可以覆盖机器人所在环境的全部路径。
+- 控制器服务器负责完成机器人在本地环境中完成任务所需要的适当的控制工作。这些任务包括但不限于：跟随一条由规划器服务器产生的路径，沿着这条路径躲避动态障碍物，甚至是去扩展坞充电。
 - 总而言之，规划器与控制器服务器就是一张由一个或多个插件构成的图集，其中每个插件都会适用于对应的环境、场景或任务。
 
 
@@ -23,21 +23,21 @@ tags:
 
   - NavFn Planner使用Dijkstra或者A*方法的导航功能规划器
 
-    不能保证在狭小空间中为非圆形的机器人规划可行路径，因为它使用机器人的圆形足迹（通过近似机器人的最大横截面半径）和每个代价地图网格单元的碰撞检测。此外，它不适合于ackermann和足型机器人，因为它们有转向约束。它最适用于可以向任何方向形式或者安全旋转的机器人，如圆形差速器和圆形全向机器人。
+    它不能保证在狭小空间中为非圆形的机器人规划可行路径，因为它使用机器人的圆形足迹（通过近似机器人的最大横截面半径）并检测每个代价地图网格单元的碰撞。此外，它不适合于ackermann和足型机器人，因为它们有转向约束。它最适用于可以向任何方向形式或者安全旋转的机器人，如圆形差速器和圆形全向机器人。
 
-  - Smac 2D Planner使用4或8个连通的领域和更平滑的多分辨率查询来实现2D A*算法
+  - Smac 2D Planner使用4或8个连通的领域来实现2D A*算法，它具有更平滑的多分辨率查询能力。
 
-    支持任意形状的ackermann和足型机器人。也可以用于需要小心地导航以避免在高速下翻到、大黄或者倾倒负载的高速机器人。
+    这个算法扩展了机器人的候选路径，同时考虑了机器人的最小转弯半径约束和机器人的完整足迹以避免碰撞。它支持需要进行完整足迹碰撞检测的任意形状的机器人。也可以用于需要小心地导航以防止高速翻到、打滑或者倾倒负载的高速机器人。
 
   - Theta Star Planner使用任一视线来创建非离散的定向的路径，以此实现Theta*算法
 
-    它基于一个State Lattice planner。该插件扩展了机器人状态空间的同时，确保路径符合机器人的动力学约束。它提供了最小控制集，能以最小配置支持任何形状和尺寸的差速、全向和ackermann车辆。
+    它基于一个State Lattice planner。该插件扩展了机器人状态空间的同时，确保路径符合机器人的动力学约束。它提供了最小控制集，能以最少的重配置支持任何形状和尺寸的差速、全向和ackermann车辆。
     
     | Plugin Name            | Supported Robot Types                                        |
     | ---------------------- | ------------------------------------------------------------ |
     | NavFn Planner          | Circular Differential, Circular Omnidirectional              |
-    | Smac Planner 2D        |                                                              |
-    | Theta Star Planner     |                                                              |
+    | Smac Planner 2D        | Circular Differential, Circular Omnidirectional              |
+    | Theta Star Planner     | Circular Differential, Circular Omnidirectional              |
     | Smac Hybrid-A* Planner | Non-circular or Circular Ackermann, Non-circular or Circular Legged |
     | Smac Lattice Planner   | Non-circular Differential, Non-circular Omnidirectional      |
 
@@ -55,19 +55,19 @@ tags:
 
 ## 控制器服务器
 
-- 默认的控制器插件为DWB controller。它利用可配置插件实现了一个修正后的动态窗口逼近算法（DWA）来计算机器人的控制指令。
+- 默认的控制器插件为DWB controller。它使用可配置插件实现了修正后的动态窗口逼近算法（DWA）来计算机器人的控制指令。他的主要功能如下：
 
   - 利用Trajectory Generator plugin生成可能轨迹的集合。
 
-  - 利用一个或多个Critic plugin评估之前的轨迹，每个plugin都将基于他们的配置方式给出不同的结果（分数）。
+  - 由一个或多个Critic plugin评估之前的轨迹，每个plugin都将基于他们的配置方式给出不同的结果（分数）。
 
-    这些评估结果的总和决定了一条轨迹的总分，得分最高的轨迹将决定输出的命令速度。
+    这些评估结果的总和决定了一条轨迹的总分，得分最高的轨迹将决定输出的指令速度。
 
 - 不同控制器的使用范围
 
-  - DWB controller用于圆形或非圆形差速以及圆形或非圆形的全向机器人；如果给定了一个Trajectory Generation plugin，他能在考虑机器人最小曲率约束的条件下生成一个可能的轨迹集合，那么DWB也可以用于配置ackermann和足式机器人。
+  - DWB controller用于圆形或非圆形差速以及圆形或非圆形的全向机器人；如果给定了一个Trajectory Generation plugin，该插件能在考虑机器人最小曲率约束的条件下生成一个可能的轨迹集合，那么DWB也可以用于配置ackermann和足式机器人。
 
-  - TEB controller是MPC时间最优的控制器。它使用Timed Elastic Band(TEB) approach算法，基于机器人执行指令的时间，与障碍物的距离以及机器人动力学约束的可行性来优化机器人的轨迹。它可用于差速、全向、ackermann和足式机器人。
+  - TEB controller是MPC时间最控制器。它使用Timed Elastic Band(TEB) approach算法，基于机器人执行指令的时间，与障碍物的距离以及机器人动力学约束的可行性来优化机器人的轨迹。它可用于差速、全向、ackermann和足式机器人。
 
   - RPP（Regulated Pure Pursuit controller）使用了一个纯追踪算法的变体并附加了规则启发式函数来管理碰撞和速度约束。这种变体是为了满足服务或工业机器人的需求而实施的，它适用于差速、ackermann和足式机器人。
 
@@ -87,4 +87,8 @@ tags:
          plugin: "dwb_core::DWBLocalPlanner"
   ```
 
-  规划器服务器的示例配置如上所示。该`planner_plugins`参数接受映射的规划器插件名称列表。对于`planner_plugins`(`GridBased`在我们的示例中) 中定义的每个插件命名空间，我们在`plugin`参数中指定要加载的插件类型。然后必须根据要使用的算法在此命名空间中指定其他配置。详情请参阅[配置指南](https://navigation.ros.org/configuration/index.html)。
+  控制器服务器的示例配置如上所示。该`controller_plugins`参数接受控制器插件对应的名称列表。对应于`controller_plugins`中定义的名称（比如`FollowPath`，它代表这插件的命名空间），我们需要在`plugin`参数中指定要加载的插件类型。然后必须根据要使用的算法在此命名空间中指定其他配置。详情请参阅[配置指南](https://navigation.ros.org/configuration/index.html)。
+
+
+
+规划器和控制器服务器以及 Nav2 的其他服务器通过生命周期节点在 ROS 2 中启动。生生命周期节点可以使服务器的启动和关闭更加容易。生命周期节点的管理将在下一个教程中讨论。
